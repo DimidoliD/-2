@@ -199,7 +199,8 @@ app.post('/webhook', async (req, res) => {
       });
 
       if (text === '/start') {
-        await sendTelegramMessage(chatId, 
+        console.log('Processing /start command');
+        const result = await sendTelegramMessage(chatId, 
           `Привет! 👋\n\n` +
           `Я бот для управления задачами.\n\n` +
           `Используйте команды:\n` +
@@ -210,7 +211,9 @@ app.post('/webhook', async (req, res) => {
           `/help - показать справку\n\n` +
           `Или откройте мини-приложение для удобного управления!`
         );
+        console.log('Send message result:', result);
       } else if (text === '/help') {
+        console.log('Processing /help command');
         await sendTelegramMessage(chatId, 
           `Доступные команды:\n\n` +
           `/start - начать работу с ботом\n` +
