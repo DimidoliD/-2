@@ -34,6 +34,11 @@ const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 // Функция для отправки сообщений в Telegram
 async function sendTelegramMessage(chatId, text, options = {}) {
   try {
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.error('TELEGRAM_BOT_TOKEN is not set');
+      return null;
+    }
+    
     const response = await axios.post(`${TELEGRAM_API_URL}/sendMessage`, {
       chat_id: chatId,
       text: text,
@@ -43,7 +48,7 @@ async function sendTelegramMessage(chatId, text, options = {}) {
     return response.data;
   } catch (error) {
     console.error('Error sending Telegram message:', error.response?.data || error.message);
-    throw error;
+    return null;
   }
 }
 
@@ -183,6 +188,8 @@ app.post('/webhook', async (req, res) => {
       const text = update.message.text;
       const userId = update.message.from.id.toString();
 
+      console.log(`Processing message from user ${userId}: ${text}`);
+
       // Сохраняем информацию о пользователе
       users.set(userId, {
         id: userId,
@@ -287,7 +294,8 @@ app.post('/webhook', async (req, res) => {
     res.status(200).send('OK');
   } catch (error) {
     console.error('Error processing webhook:', error);
-    res.status(500).send('Error');
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
   }
 });
 
