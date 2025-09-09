@@ -35,7 +35,7 @@ const TELEGRAM_API_URL = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 async function sendTelegramMessage(chatId, text, options = {}) {
   try {
     if (!TELEGRAM_BOT_TOKEN) {
-      console.error('TELEGRAM_BOT_TOKEN is not set');
+      console.log('TELEGRAM_BOT_TOKEN is not set, skipping message send');
       return null;
     }
     
