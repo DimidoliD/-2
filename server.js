@@ -198,35 +198,18 @@ app.post('/webhook', async (req, res) => {
         lastName: update.message.from.last_name
       });
 
+      // Обрабатываем команды без отправки сообщений в Telegram
       if (text === '/start') {
         console.log('Processing /start command');
-        const result = await sendTelegramMessage(chatId, 
-          `Привет! 👋\n\n` +
-          `Я бот для управления задачами.\n\n` +
-          `Используйте команды:\n` +
-          `/add <задача> - добавить задачу\n` +
-          `/list - показать все задачи\n` +
-          `/done <номер> - отметить задачу как выполненную\n` +
-          `/delete <номер> - удалить задачу\n` +
-          `/help - показать справку\n\n` +
-          `Или откройте мини-приложение для удобного управления!`
-        );
-        console.log('Send message result:', result);
+        // Просто логируем, что команда получена
+        console.log('Start command received from user:', userId);
       } else if (text === '/help') {
         console.log('Processing /help command');
-        await sendTelegramMessage(chatId, 
-          `Доступные команды:\n\n` +
-          `/start - начать работу с ботом\n` +
-          `/add <задача> - добавить новую задачу\n` +
-          `/list - показать все ваши задачи\n` +
-          `/done <номер> - отметить задачу как выполненную\n` +
-          `/delete <номер> - удалить задачу\n` +
-          `/help - показать эту справку`
-        );
+        console.log('Help command received from user:', userId);
       } else if (text.startsWith('/add ')) {
         const taskText = text.substring(5);
         if (!taskText) {
-          await sendTelegramMessage(chatId, 'Пожалуйста, укажите задачу. Пример: /add Купить молоко');
+          console.log('Add command without text from user:', userId);
           return;
         }
 
@@ -239,29 +222,17 @@ app.post('/webhook', async (req, res) => {
         };
 
         todos.push(newTodo);
-        await sendTelegramMessage(chatId, `✅ Задача добавлена: "${taskText}"`);
+        console.log('Task added:', newTodo);
       } else if (text === '/list') {
         const userTodos = todos.filter(todo => todo.userId === userId);
-        
-        if (userTodos.length === 0) {
-          await sendTelegramMessage(chatId, 'У вас пока нет задач. Добавьте первую с помощью /add');
-          return;
-        }
-
-        let message = '📋 Ваши задачи:\n\n';
-        userTodos.forEach((todo, index) => {
-          const status = todo.completed ? '✅' : '⏳';
-          message += `${index + 1}. ${status} ${todo.text}\n`;
-        });
-
-        await sendTelegramMessage(chatId, message);
+        console.log('List command from user:', userId, 'Tasks:', userTodos.length);
       } else if (text.startsWith('/done ')) {
         const taskNumber = parseInt(text.substring(6));
         const userTodos = todos.filter(todo => todo.userId === userId);
         const taskIndex = taskNumber - 1;
 
         if (isNaN(taskNumber) || taskIndex < 0 || taskIndex >= userTodos.length) {
-          await sendTelegramMessage(chatId, 'Задача с таким номером не найдена. Используйте /list чтобы увидеть ваши задачи.');
+          console.log('Invalid done command from user:', userId, 'taskNumber:', taskNumber);
           return;
         }
 
@@ -270,7 +241,7 @@ app.post('/webhook', async (req, res) => {
         
         if (globalTaskIndex !== -1) {
           todos[globalTaskIndex].completed = true;
-          await sendTelegramMessage(chatId, `✅ Задача выполнена: "${task.text}"`);
+          console.log('Task marked as done:', task.text);
         }
       } else if (text.startsWith('/delete ')) {
         const taskNumber = parseInt(text.substring(8));
@@ -278,7 +249,7 @@ app.post('/webhook', async (req, res) => {
         const taskIndex = taskNumber - 1;
 
         if (isNaN(taskNumber) || taskIndex < 0 || taskIndex >= userTodos.length) {
-          await sendTelegramMessage(chatId, 'Задача с таким номером не найдена. Используйте /list чтобы увидеть ваши задачи.');
+          console.log('Invalid delete command from user:', userId, 'taskNumber:', taskNumber);
           return;
         }
 
@@ -287,10 +258,10 @@ app.post('/webhook', async (req, res) => {
         
         if (globalTaskIndex !== -1) {
           todos.splice(globalTaskIndex, 1);
-          await sendTelegramMessage(chatId, `🗑️ Задача удалена: "${task.text}"`);
+          console.log('Task deleted:', task.text);
         }
       } else {
-        await sendTelegramMessage(chatId, 'Неизвестная команда. Используйте /help для просмотра доступных команд.');
+        console.log('Unknown command from user:', userId, 'text:', text);
       }
     }
 
